@@ -1365,10 +1365,8 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 	NVT_LOG("%s: htc_bootmode = %s", __func__, htc_bootmode);
 	if((strcmp(htc_bootmode, "offmode_charging") == 0) ||
 			(strcmp(htc_bootmode, "charger") == 0) ||
-			(strcmp(htc_bootmode, "recovery") == 0) ||
 			(strcmp(htc_bootmode, "MFG_MODE_OFFMODE_CHARGING") == 0) ||
-			(strcmp(htc_bootmode, "MFG_MODE_POWER_TEST") == 0) ||
-			(strcmp(htc_bootmode, "MFG_MODE_RECOVERY") == 0)) {
+			(strcmp(htc_bootmode, "MFG_MODE_POWER_TEST") == 0)) {
 		NVT_LOG("%s: --skip--", __func__);
 		return 0;
 	}
