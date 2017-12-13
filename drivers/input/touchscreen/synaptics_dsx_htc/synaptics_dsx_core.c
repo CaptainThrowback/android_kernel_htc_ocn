@@ -5922,8 +5922,7 @@ static int synaptics_rmi4_probe(struct platform_device *pdev)
 	static char *htc_bootmode = NULL;
 	htc_bootmode = htc_get_bootmode();
 	pr_info("%s: htc_bootmode = %s", __func__, htc_bootmode);
-	if((strcmp(htc_bootmode, "offmode_charging") == 0) ||
-			(strcmp(htc_bootmode, "recovery") == 0)) {
+	if((strcmp(htc_bootmode, "offmode_charging") == 0)) {
 		pr_info("%s: --skip--", __func__);
 		return -ENODEV;
 	}

@@ -352,10 +352,8 @@ static int cyttsp5_i2c_probe(struct i2c_client *client,
 	dev_info(dev, "%s: htc_bootmode = %s", __func__, htc_bootmode);
 	if( (strcmp(htc_bootmode, "offmode_charging") == 0) ||
 		(strcmp(htc_bootmode, "charger") == 0) ||
-		(strcmp(htc_bootmode, "recovery") == 0) ||
 		(strcmp(htc_bootmode, "MFG_MODE_OFFMODE_CHARGING") == 0) ||
-		(strcmp(htc_bootmode, "MFG_MODE_POWER_TEST") == 0) ||
-		(strcmp(htc_bootmode, "MFG_MODE_RECOVERY") == 0)) {
+		(strcmp(htc_bootmode, "MFG_MODE_POWER_TEST") == 0)) {
 		dev_info(dev, "%s: skip to cyttsp5_i2c_probe()", __func__);
 		return 0;
 	}
