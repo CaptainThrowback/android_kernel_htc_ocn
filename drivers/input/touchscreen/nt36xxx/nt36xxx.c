@@ -1365,8 +1365,10 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 	NVT_LOG("%s: htc_bootmode = %s", __func__, htc_bootmode);
 	if((strcmp(htc_bootmode, "offmode_charging") == 0) ||
 			(strcmp(htc_bootmode, "charger") == 0) ||
+			(strcmp(htc_bootmode, "recovery") == 0) ||
 			(strcmp(htc_bootmode, "MFG_MODE_OFFMODE_CHARGING") == 0) ||
-			(strcmp(htc_bootmode, "MFG_MODE_POWER_TEST") == 0)) {
+			(strcmp(htc_bootmode, "MFG_MODE_POWER_TEST") == 0) ||
+			(strcmp(htc_bootmode, "MFG_MODE_RECOVERY") == 0)) {
 		NVT_LOG("%s: --skip--", __func__);
 		return 0;
 	}
@@ -1569,7 +1571,7 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 	wake_lock_init(&gestrue_wakelock, WAKE_LOCK_SUSPEND, "poll-wake-lock");
 #endif
 
-	sprintf(ts->phys, "input/ts");
+	snprintf(ts->phys, sizeof(ts->phys), "input/ts");
 	ts->input_dev->name = NVT_TS_NAME;
 	ts->input_dev->phys = ts->phys;
 	ts->input_dev->id.bustype = BUS_I2C;
@@ -1959,7 +1961,6 @@ static void dsi_status_detect(int status)
 		NVT_LOG("%s: ---\n", __func__);
 		break;
 	default:
-		NVT_ERR("%s: Upsupported status\n", __func__);
 		break;
 	};
 }

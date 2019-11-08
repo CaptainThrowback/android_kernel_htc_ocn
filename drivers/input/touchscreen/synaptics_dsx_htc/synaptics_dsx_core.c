@@ -5293,8 +5293,8 @@ static int synaptics_rmi4_set_gpio(struct synaptics_rmi4_data *rmi4_data)
 
 #ifdef HTC_FEATURE
 err_gpio_switch:
-	if (bdata->switch_gpio >= 0)
-		synaptics_rmi4_gpio_setup(bdata->switch_gpio, false, 0, 0);
+	if (bdata->reset_gpio >= 0)
+		synaptics_rmi4_gpio_setup(bdata->reset_gpio, false, 0, 0);
 #endif
 
 err_gpio_reset:
@@ -5891,6 +5891,25 @@ exit:
 }
 EXPORT_SYMBOL(synaptics_rmi4_new_function);
 
+#ifdef HTC_FEATURE
+static int check_chip_exist(struct synaptics_rmi4_data *rmi4_data)
+{
+	unsigned char data;
+	int retval;
+
+	retval = synaptics_rmi4_reg_read(rmi4_data,
+			(PDT_PROPS-1),
+			&data,
+			sizeof(data));
+	if (retval > 0 && (data == SYNAPTICS_RMI4_F34)) {
+		dev_info(rmi4_data->pdev->dev.parent, "%s: Synaptics chip exist\n", __func__);
+		return 0;
+	}
+
+	return -1;
+}
+#endif
+
 static int synaptics_rmi4_probe(struct platform_device *pdev)
 {
 	int retval;
@@ -5903,7 +5922,8 @@ static int synaptics_rmi4_probe(struct platform_device *pdev)
 	static char *htc_bootmode = NULL;
 	htc_bootmode = htc_get_bootmode();
 	pr_info("%s: htc_bootmode = %s", __func__, htc_bootmode);
-	if((strcmp(htc_bootmode, "offmode_charging") == 0)) {
+	if((strcmp(htc_bootmode, "offmode_charging") == 0) ||
+			(strcmp(htc_bootmode, "recovery") == 0)) {
 		pr_info("%s: --skip--", __func__);
 		return -ENODEV;
 	}
@@ -5994,6 +6014,14 @@ static int synaptics_rmi4_probe(struct platform_device *pdev)
 			goto err_ui_hw_init;
 		}
 	}
+
+#ifdef HTC_FEATURE
+	if (check_chip_exist(rmi4_data) < 0) {
+		dev_info(&pdev->dev, "%s: No Synaptics chip\n", __func__);
+		retval = -ENODEV;
+		goto err_set_input_dev;
+	}
+#endif
 
 	retval = synaptics_rmi4_set_input_dev(rmi4_data);
 	if (retval < 0) {
@@ -6174,6 +6202,11 @@ err_enable_irq:
 err_set_input_dev:
 	synaptics_rmi4_gpio_setup(bdata->irq_gpio, false, 0, 0);
 
+#ifdef HTC_FEATURE
+	if (bdata->switch_gpio >= 0)
+		synaptics_rmi4_gpio_setup(bdata->switch_gpio, false, 0, 0);
+#endif
+
 	if (bdata->reset_gpio >= 0)
 		synaptics_rmi4_gpio_setup(bdata->reset_gpio, false, 0, 0);
 
@@ -6254,6 +6287,11 @@ static int synaptics_rmi4_remove(struct platform_device *pdev)
 	}
 
 	synaptics_rmi4_gpio_setup(bdata->irq_gpio, false, 0, 0);
+
+#ifdef HTC_FEATURE
+	if (bdata->switch_gpio >= 0)
+		synaptics_rmi4_gpio_setup(bdata->switch_gpio, false, 0, 0);
+#endif
 
 	if (bdata->reset_gpio >= 0)
 		synaptics_rmi4_gpio_setup(bdata->reset_gpio, false, 0, 0);
