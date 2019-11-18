@@ -1,4 +1,4 @@
-defconfig file: msmcortex_defconfig
+defconfig file: htcperf_defconfig
 
 Download:
 ========
@@ -15,7 +15,7 @@ Build the kernel:
 set the following environment variables:
 
 $ mkdir -p out
-$ make ARCH=arm64 CROSS_COMPILE=<path-to-toolchain>/bin/aarch64-linux-android- O=out msmcortex_defconfig
+$ make ARCH=arm64 CROSS_COMPILE=<path-to-toolchain>/bin/aarch64-linux-android- O=out htcperf_defconfig
 $ make ARCH=arm64 CROSS_COMPILE=<path-to-toolchain>/bin/aarch64-linux-android- O=out -j16
 
 Output binary files:

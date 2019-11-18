@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2015, 2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014-2018, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -2286,6 +2286,8 @@ static void qpnp_hap_td_enable(struct timed_output_dev *dev, int time_ms)
 {
 	struct qpnp_hap *hap = container_of(dev, struct qpnp_hap,
 					 timed_dev);
+	bool state = !!time_ms;
+	ktime_t rem;
 	int rc;
 
 	if (time_ms < 0)
@@ -2294,6 +2296,24 @@ static void qpnp_hap_td_enable(struct timed_output_dev *dev, int time_ms)
 	VIB_INFO_LOG("en=%d\n", time_ms);
 
 	spin_lock(&hap->lock);
+
+	if (hap->state == state) {
+		if (state) {
+			rem = hrtimer_get_remaining(&hap->hap_timer);
+			if (time_ms > ktime_to_ms(rem)) {
+				time_ms = (time_ms > hap->timeout_ms ?
+						 hap->timeout_ms : time_ms);
+				hrtimer_cancel(&hap->hap_timer);
+				hap->play_time_ms = time_ms;
+				hrtimer_start(&hap->hap_timer,
+						ktime_set(time_ms / 1000,
+						(time_ms % 1000) * 1000000),
+						HRTIMER_MODE_REL);
+			}
+		}
+		spin_unlock(&hap->lock);
+		return;
+	}
 
 	if (time_ms == 0) {
 		/* disable haptics */
@@ -2304,29 +2324,33 @@ static void qpnp_hap_td_enable(struct timed_output_dev *dev, int time_ms)
 		return;
 	}
 
-	if (time_ms < 10)
-		time_ms = 10;
+	hap->state = state;
+	if (!hap->state) {
+		hrtimer_cancel(&hap->hap_timer);
+	} else {
+		if (time_ms < 10)
+			time_ms = 10;
 
-	if (is_sw_lra_auto_resonance_control(hap))
-		hrtimer_cancel(&hap->auto_res_err_poll_timer);
+		if (hap->auto_mode) {
+			rc = qpnp_hap_auto_mode_config(hap, time_ms);
+			if (rc < 0) {
+				pr_err("Unable to do auto mode config\n");
+				spin_unlock(&hap->lock);
+				return;
+			}
 
-	hrtimer_cancel(&hap->hap_timer);
-
-	if (hap->auto_mode) {
-		rc = qpnp_hap_auto_mode_config(hap, time_ms);
-		if (rc < 0) {
-			pr_err("Unable to do auto mode config\n");
-			spin_unlock(&hap->lock);
-			return;
 		}
+
+		time_ms = (time_ms > hap->timeout_ms ?
+				 hap->timeout_ms : time_ms);
+		hap->play_time_ms = time_ms;
+		hrtimer_start(&hap->hap_timer,
+				ktime_set(time_ms / 1000,
+				(time_ms % 1000) * 1000000),
+				HRTIMER_MODE_REL);
 	}
 
-	time_ms = (time_ms > hap->timeout_ms ? hap->timeout_ms : time_ms);
-	hap->play_time_ms = time_ms;
-	hap->state = 1;
-	hrtimer_start(&hap->hap_timer,
-		ktime_set(time_ms / 1000, (time_ms % 1000) * 1000000),
-		HRTIMER_MODE_REL);
+
 	spin_unlock(&hap->lock);
 	schedule_work(&hap->work);
 }
