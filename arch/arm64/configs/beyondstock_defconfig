@@ -956,10 +956,18 @@ CONFIG_NLS_UTF8=y
 #       CONFIG_EXFAT_FS should be set to 'm' (don't set to 'y')
 #       CONFIG_EXFAT_FS should be modified with project code name to prevent conflict with other projects
 #
-CONFIG_EXFAT_FS=m
-CONFIG_EXFAT_PATH="texfat_msm8998"
-CONFIG_EXFAT_VERSION="target/htc.d/htc-3016.6.23.3-msm8998-n-4.4-new"
+#CONFIG_EXFAT_FS=m
+#CONFIG_EXFAT_PATH="texfat_msm8998"
+#CONFIG_EXFAT_VERSION="target/htc.d/htc-3016.6.23.3-msm8998-n-4.4-new"
+
+# exfat-linux
+CONFIG_EXFAT_FS=y
+CONFIG_EXFAT_DEBUG=y
+# CONFIG_EXFAT_UEVENT is not set
+
+# Custom Kernel Branding
 CONFIG_LOCALVERSION="-BeyondStockᵀᴹ-Recovery-ocn-Pie"
+
 # CONFIG_SLUB_LIGHT_WEIGHT_DEBUG_ON is not set
 # CONFIG_MSM_DEBUG_LAR_UNLOCK is not set
 # CONFIG_DETECT_HUNG_TASK is not set
